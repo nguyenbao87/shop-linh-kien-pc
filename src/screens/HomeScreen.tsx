@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { colors } from '../constants/colors';
 import { PRODUCTS_DATA, ProductType } from '../data/products';
+import { useCart } from '../context/CartContext';
+import CartModal from '../components/CartModal';
 
 const { width } = Dimensions.get('window');
 const itemWidth = (width - 48) / 2;
@@ -32,6 +34,7 @@ const CATEGORIES = [
 
 const HomeScreen = ({ navigation }: any) => {
   const [searchText, setSearchText] = useState('');
+  const { getTotalItems } = useCart();
   
   // 1. QUẢN LÝ SIDEBAR (BÊN TRÁI - LỌC)
   const [isSideMenuVisible, setSideMenuVisible] = useState(false);
@@ -39,6 +42,9 @@ const HomeScreen = ({ navigation }: any) => {
 
   // 2. QUẢN LÝ USER MENU (BÊN PHẢI - ĐĂNG XUẤT)
   const [isUserMenuVisible, setUserMenuVisible] = useState(false);
+
+  // 3. QUẢN LÝ GIỎ HÀNG
+  const [isCartModalVisible, setCartModalVisible] = useState(false);
 
   // --- LOGIC LỌC SẢN PHẨM ---
   const filteredProducts = selectedCategory === 'all' 
@@ -207,6 +213,28 @@ const HomeScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           </Modal>
 
+          {/* --- 5. NÚT GIỎ HÀNG NỔI (PHẢI DƯỚI) --- */}
+          <TouchableOpacity
+            style={styles.floatingCartButton}
+            onPress={() => setCartModalVisible(true)}
+          >
+            <Image
+              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/263/263142.png' }}
+              style={styles.cartIcon}
+            />
+            {getTotalItems() > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{getTotalItems()}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* --- 6. MODAL GIỎ HÀNG --- */}
+          <CartModal
+            visible={isCartModalVisible}
+            onClose={() => setCartModalVisible(false)}
+          />
+
         </View>
       </TouchableWithoutFeedback>
     </SafeAreaView>
@@ -306,6 +334,49 @@ const styles = StyleSheet.create({
   sidebarItemActive: { backgroundColor: '#EFF6FF', borderRadius: 8, paddingHorizontal: 10, borderBottomWidth: 0 },
   sidebarText: { fontSize: 16, color: '#374151', fontWeight: '500' },
   sidebarTextActive: { color: colors.primary, fontWeight: 'bold' },
+
+  // --- STYLE NÚT GIỎ HÀNG NỔI ---
+  floatingCartButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+    zIndex: 100,
+  },
+  cartIcon: {
+    width: 30,
+    height: 30,
+    tintColor: 'white',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#DC2626',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  cartBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });
 
 export default HomeScreen;

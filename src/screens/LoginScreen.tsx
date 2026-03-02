@@ -1,211 +1,131 @@
-// src/screens/LoginScreen.tsx
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  SafeAreaView, 
-  TouchableOpacity, 
-  Platform, 
-  Alert, 
+import React, { useState } from 'react'; // Nhớ thêm useState
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
-  ScrollView // Thêm ScrollView để cuộn được trên màn hình nhỏ
+  SafeAreaView,
+  Alert
 } from 'react-native';
 
-import CustomInput from '../components/CustomInput';
-import CustomButton from '../components/CustomButton';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { colors } from '../constants/colors';
+import RegisterModal from '../components/RegisterModal';
+
+const loginSchema = z.object({
+  email: z.string().min(1, 'Vui lòng nhập tên đăng nhập'),
+  password: z.string().min(4, 'Mật khẩu phải có ít nhất 4 ký tự'),
+});
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginScreen = ({ navigation }: any) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [errors, setErrors] = useState({
-    username: '', // Lỗi của ô username
-    password: ''  // Lỗi của ô password
+  // STATE ĐỂ BẬT/TẮT MODAL ĐĂNG KÝ
+  const [isRegisterVisible, setRegisterVisible] = useState(false);
+
+  const { control, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
   });
 
-  const handleLogin = () => {
-    // 2. Reset lỗi cũ trước khi kiểm tra
-    let newErrors = { username: '', password: '' };
-    let hasError = false;
-
-    // 3. Đặt điều kiện kiểm tra (Validation)
-    if (username.trim() === '') {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập';
-      hasError = true;
+  const onSubmit = (data: LoginFormData) => {
+    // Kiểm tra tài khoản admin
+    if (data.email === 'admin' && data.password === '1111') {
+      console.log('Login successful:', data);
+      navigation.replace('Home');
+    } else {
+      Alert.alert('Đăng nhập thất bại', 'Tài khoản hoặc mật khẩu không đúng!');
     }
-
-    if (password.trim() === '') {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
-      hasError = true;
-    }
-    setErrors(newErrors);
-
-    // 4. Nếu có lỗi thì DỪNG LẠI (return), không chạy code login bên dưới nữa
-    if (hasError) {
-      return; 
-    }
-    setIsLoading(true);
-    setTimeout(() => {
-setIsLoading(false);
-      
-      // KIỂM TRA TÀI KHOẢN VÀ MẬT KHẨU
-      if (username === 'admin' && password === '1111') {
-        // Chuyển sang trang Home và không cho quay lại Login bằng nút Back (replace)
-        navigation.replace('Home'); 
-      } else {
-        // Nếu sai thì báo lỗi
-        Alert.alert("Lỗi đăng nhập", "Tài khoản hoặc mật khẩu không đúng!");
-      }
-      
-    }, 1000); // Đợi 1 giây cho cảm giác loading
   };
 
-  const handleGoogleLogin = () => {
-    Alert.alert("Thông báo", "Chức năng đăng nhập bằng Google đang được phát triển.");
-    };
-  const handlePhoneLogin = () => {
-    Alert.alert("Thông báo", "Chức năng đăng nhập bằng Số điện thoại đang được phát triển.");
-    };
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
-          
-          {/* TIÊU ĐỀ */}
-          <Text style={styles.title}>Shopbi</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Đăng Nhập</Text>
 
-          {/* INPUT FORM */}
-          {/* 5. Truyền lỗi vào component */}
-          <CustomInput 
-            label="Tên đăng nhập"
-            placeholder="Nhập email hoặc tài khoản"
-            value={username}
-            onChangeText={(text) => {
-              setUsername(text);
-              setErrors({...errors, username: ''});
-            }}
-            errorText={errors.username}
+        {/* ... (Các ô nhập Email/Password giữ nguyên) ... */}
+        
+        {/* --- Copy lại phần input cũ vào đây nếu bạn lỡ xóa --- */}
+        <View style={styles.inputGroup}>
+           <Text style={styles.label}>Tên đăng nhập</Text>
+           <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[styles.input, errors.email && styles.inputError]}
+                placeholder="Nhập tên đăng nhập"
+                onBlur={onBlur} onChangeText={onChange} value={value}
+                autoCapitalize="none"
+              />
+            )}
           />
-
-          <CustomInput 
-            label="Mật khẩu"
-            placeholder="Nhập mật khẩu"
-            isPassword={true}
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setErrors({...errors, password: ''});
-            }}
-            errorText={errors.password}
-          />
-          {/* QUÊN MẬT KHẨU */}
-          <TouchableOpacity style={styles.forgotButton}>
-            <Text style={styles.forgotText}>Quên mật khẩu?</Text>
-          </TouchableOpacity>
-
-          {/* NÚT ĐĂNG NHẬP */}
-          <CustomButton 
-            title="Đăng nhập" 
-            onPress={handleLogin} 
-            isLoading={isLoading}
-          />
-          
-
-          {/* PHÂN CÁCH (Hoặc) */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.line} />
-            <Text style={styles.dividerText}>Hoặc đăng nhập với</Text>
-            <View style={styles.line} />
-          </View>
-
-          {/* CÁC NÚT SOCIAL */}
-          <CustomButton 
-            title="📱 Số điện thoại" 
-            onPress={handlePhoneLogin}
-            borderColor='gray' 
-            bgColor='white'
-            textColor='black'
-          />
-          
-          <CustomButton
-            title="🌐 Google" 
-            onPress={handleGoogleLogin}
-            borderColor='gray'
-            bgColor='white'
-            textColor='black'
-          />
-
-          {/* APPLE ID (Chỉ hiện trên iOS) */}
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity style={styles.appleButton}>
-              <Text style={styles.appleText}> Apple ID</Text>
-            </TouchableOpacity>
-          )}
-
+          {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
         </View>
-      </ScrollView>
+
+        <View style={styles.inputGroup}>
+           <Text style={styles.label}>Mật khẩu</Text>
+           <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[styles.input, errors.password && styles.inputError]}
+                placeholder="Nhập mật khẩu"
+                onBlur={onBlur} onChangeText={onChange} value={value}
+                secureTextEntry
+              />
+            )}
+          />
+          {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleSubmit(onSubmit)}>
+          <Text style={styles.buttonText}>Đăng Nhập</Text>
+        </TouchableOpacity>
+
+        {/* --- DÒNG CHỮ ĐĂNG KÝ (MỚI) --- */}
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Chưa có tài khoản? </Text>
+          <TouchableOpacity onPress={() => setRegisterVisible(true)}>
+            <Text style={styles.registerLink}>Đăng ký ngay</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* --- NHÚNG MODAL ĐĂNG KÝ VÀO ĐÂY (Nó ẩn mặc định) --- */}
+        <RegisterModal 
+          visible={isRegisterVisible} 
+          onClose={() => setRegisterVisible(false)} 
+        />
+
+      </View>
     </SafeAreaView>
   );
 };
 
-// ĐỊNH NGHĨA STYLE
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.white,
+  // ... (Các style cũ giữ nguyên) ...
+  container: { flex: 1, backgroundColor: '#fff', justifyContent: 'center' },
+  content: { padding: 20 },
+  title: { fontSize: 32, fontWeight: 'bold', color: colors.primary, marginBottom: 30, textAlign: 'center' },
+  inputGroup: { marginBottom: 15 },
+  label: { marginBottom: 5, fontWeight: '500', color: '#333' },
+  input: { height: 50, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 15, backgroundColor: '#f9f9f9' },
+  inputError: { borderColor: 'red', backgroundColor: '#fff0f0' },
+  errorText: { color: 'red', fontSize: 12, marginTop: 5 },
+  button: { backgroundColor: colors.primary, height: 50, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginTop: 10 },
+  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+
+  // Style cho phần Đăng ký mới
+  registerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 20,
   },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 24, // Padding bao quanh màn hình
-    justifyContent: 'center', // Căn giữa nội dung theo chiều dọc
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: colors.primary,
-    textAlign: 'center',
-    marginBottom: 40, // Cách form nhập liệu 40 đơn vị
-  },
-  forgotButton: {
-    alignSelf: 'flex-end', // Căn phải
-    marginBottom: 24,
-  },
-  forgotText: {
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  dividerContainer: {
-    flexDirection: 'row', // Xếp ngang
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  line: {
-    flex: 1, // Chiếm hết khoảng trống còn lại
-    height: 1,
-    backgroundColor: colors.grayBorder,
-  },
-  dividerText: {
-    marginHorizontal: 16, // Cách 2 đường kẻ 2 bên
-    color: colors.grayText,
-  },
-  appleButton: {
-    width: '100%',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 12,
-    backgroundColor: 'black', // Nút Apple màu đen
-  },
-  appleText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+  registerText: { color: '#666' },
+  registerLink: { color: colors.primary, fontWeight: 'bold' },
 });
 
 export default LoginScreen;

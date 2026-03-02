@@ -13,24 +13,40 @@ import {
 } from 'react-native';
 import { colors } from '../constants/colors';
 import { PRODUCTS_DATA, ProductType, SpecItem, ReviewType } from '../data/products';
+import { useCart } from '../context/CartContext';
+import AddToCartModal from '../components/AddToCartModal';
 
 const { width } = Dimensions.get('window');
 const IMAGE_HEIGHT = 300;
 
 const ProductDetailScreen = ({ route, navigation }: any) => {
   const { product } = route.params;
+  const { addToCart } = useCart();
   
   // Lọc sản phẩm liên quan
   const relatedProducts = PRODUCTS_DATA.filter(item => item.id !== product.id);
   
   // State cho slide ảnh
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  // State cho modal thêm vào giỏ hàng
+  const [isAddToCartModalVisible, setAddToCartModalVisible] = useState(false);
 
   const onScrollChange = (nativeEvent: any) => {
     const slide = Math.ceil(nativeEvent.contentOffset.x / nativeEvent.layoutMeasurement.width);
     if (slide !== activeImageIndex) {
       setActiveImageIndex(slide);
     }
+  };
+
+  const handleAddToCart = () => {
+    setAddToCartModalVisible(true);
+  };
+
+  const handleConfirmAddToCart = (quantity: number) => {
+    addToCart(product, quantity);
+    setAddToCartModalVisible(false);
+    Alert.alert('Thành công', `Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
   };
 
   // --- CÁC HÀM RENDER (HIỂN THỊ) ---
@@ -174,7 +190,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.btnCart} 
-          onPress={() => Alert.alert('Thông báo', 'Đã thêm vào giỏ hàng!')}
+          onPress={handleAddToCart}
         >
           <Text style={styles.btnCartText}>Thêm vào giỏ</Text>
         </TouchableOpacity>
@@ -186,6 +202,14 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
           <Text style={styles.btnBuyText}>Mua ngay</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal thêm vào giỏ hàng */}
+      <AddToCartModal
+        visible={isAddToCartModalVisible}
+        product={product}
+        onClose={() => setAddToCartModalVisible(false)}
+        onConfirm={handleConfirmAddToCart}
+      />
     </SafeAreaView>
   );
 };
