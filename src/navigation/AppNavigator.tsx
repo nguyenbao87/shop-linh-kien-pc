@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
+import ProductListScreen from '../screens/ProductListScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
 import { CartProvider } from '../context/CartContext';
 
@@ -19,6 +20,7 @@ const AppNavigator = () => {
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+          <Stack.Screen name="ProductList" component={ProductListScreen} />
           <Stack.Screen name="UserProfile" component={UserProfileScreen} />
         </Stack.Navigator>
       </NavigationContainer>

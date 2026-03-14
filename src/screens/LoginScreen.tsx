@@ -43,7 +43,7 @@ const LoginScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Đăng Nhập</Text>
+        <Text style={styles.title}>BPTECH</Text>
 
         {/* ... (Các ô nhập Email/Password giữ nguyên) ... */}
         

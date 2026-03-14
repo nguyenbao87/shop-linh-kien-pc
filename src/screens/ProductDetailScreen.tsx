@@ -197,7 +197,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
         <View style={{ width: 12 }} /> 
         <TouchableOpacity 
           style={styles.btnBuy}
-          onPress={() => Alert.alert('Thanh toán', 'Đi đến trang thanh toán')}
+          onPress={() => Alert.alert('Thanh toán', 'Trang thanh toán đang phát triển ')}
         >
           <Text style={styles.btnBuyText}>Mua ngay</Text>
         </TouchableOpacity>
